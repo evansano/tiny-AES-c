@@ -62,15 +62,17 @@ int main(void)
     AES_init_ctx_iv(&ctx, key, iv);
     AES_CTR_xcrypt_buffer(&ctx, in, 64, my_rank, comm_sz, comm);
   
-  
-    if (0 == memcmp((char *) out, (char *) in, 64))
-    {
-        printf("SUCCESS!\n");
+    if(my_rank == 0){
+        if (0 == memcmp((char *) out, (char *) in, 64))
+        {
+            printf("SUCCESS!\n");
+        }
+        else
+        {
+            printf("FAILURE!\n");
+        }
     }
-    else
-    {
-        printf("FAILURE!\n");
-    }
+    MPI_Finalize();
     return 0;
 }
 
