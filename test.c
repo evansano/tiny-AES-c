@@ -62,7 +62,6 @@ int main(void)
     AES_init_ctx_iv(&ctx, key, iv);
     AES_CTR_xcrypt_buffer(&ctx, in, 64, my_rank, comm_sz, comm);
   
-    printf("CTR %s: ", xcrypt);
   
     if (0 == memcmp((char *) out, (char *) in, 64))
     {
