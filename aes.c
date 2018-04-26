@@ -461,8 +461,21 @@ static void InvCipher(state_t* state,uint8_t* RoundKey)
 #if defined(CTR) && (CTR == 1)
 
 /* Symmetrical operation: same function for encrypting as for decrypting. Note any IV/nonce should never be reused with the same key */
-void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length)
+void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length, uint32_t my_rank, uint32_t comm_sz, MPI_Comm comm)
 {
+  uint32_t num_blocks, local_num_blocks;
+  uint8_t* local_buf;
+  if(my_rank == 0){
+    #if defined AES_BLOCKLEN
+      num_blocks = length / AES_BLOCKLEN;
+    #else
+      num_blocks = length / 16;
+    #endif
+    local_num_blocks = num_blocks / comm_sz;
+  }
+  MPI_Bcast(&local_num_blocks, 1, MPI_INT, 0, comm);
+  printf("[%d/%d] received: %d\n", local_num_blocks);
+  return;
   uint8_t buffer[AES_BLOCKLEN];
   
   unsigned i;
