@@ -8,10 +8,10 @@
 
 #include "aes.h"
 
-int arrSizes[6] = {1024, 8192, 65536, 1048576, 5242880, 10485760};
-char* arrSizeHuman[6] = {"1 kB", "8 kB", "64 kB", "1 MB" "5 MB", "10 MB"}
-// int arrSizes[3] = {1024, 8192, 65536};
-// int arrSizeHuman[3] = {"1 kB", "8 kB", "64 kB"}
+// int arrSizes[6] = {1024, 8192, 65536, 1048576, 5242880, 10485760};
+// char* arrSizeHuman[6] = {"1 kB", "8 kB", "64 kB", "1 MB" "5 MB", "10 MB"}
+int arrSizes[3] = {1024, 8192, 65536};
+char* arrSizeHuman[3] = {"1 kB", "8 kB", "64 kB"};
 static void phex(uint8_t* str);
 
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
             #endif
             local_num_blocks = num_blocks / comm_sz;
 
-            in = malloc(arrSizes[i]*sizeof(uint8_t));
+            in = malloc(arrSizes[i]*sizeof(int));
             // Fill all elemnts with hex value of the ASCII 'A'
             for(j = 0 ; j < arrSizes[i] ; j++){
                 in[j] = 0x41;
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         
         MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
         printf("[%d/%d] received: %llu\n", my_rank, comm_sz, local_num_blocks);
-        local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(uint8_t));
+        local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(int));
         MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT,
                       local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
         AES_init_ctx_iv(&ctx, key, iv);
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
             fprintf(fh, "File size: %s\nElapsed time: %f seconds\n\n", arrSizeHuman[i], elapsed);
             free(in);
         }
-        MPI_Barrer(comm);
+        MPI_Barrier(comm);
 
         
         free(local_in);
