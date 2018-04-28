@@ -9,7 +9,7 @@
 #include "aes.h"
 
 int arrSizes[6] = {1024, 8192, 65536, 1048576, 5242880, 10485760};
-int arrSizeHuman[6] = {"1 kB", "8 kB", "64 kB", "1 MB" "5 MB", "10 MB"}
+char* arrSizeHuman[6] = {"1 kB", "8 kB", "64 kB", "1 MB" "5 MB", "10 MB"}
 // int arrSizes[3] = {1024, 8192, 65536};
 // int arrSizeHuman[3] = {"1 kB", "8 kB", "64 kB"}
 static void phex(uint8_t* str);
