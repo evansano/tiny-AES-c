@@ -40,10 +40,10 @@ int main(int argc, char **argv)
     long long int num_blocks, local_num_blocks;
     uint8_t* local_in;
     uint8_t * in;
-
+    FILE *fh;
     int i, j;
     if(my_rank == 0){
-        FILE *fh;
+        
         fh = fopen(argv[1], "a");
         fprintf(fh, "Processes: %d\n", comm_sz);
 
@@ -77,11 +77,12 @@ int main(int argc, char **argv)
             end = MPI_Wtime();
             elapsed = end-start;
             fprintf(fh, "File size: %s\nElapsed time: %f seconds\n\n", arrSizeHuman[i], elapsed);
+            free(in);
         }
         MPI_Barrer(comm);
 
-        free(in);
-        free(local_buf);
+        
+        free(local_in);
     }
     if(my_rank == 0){
         fclose(fh);
