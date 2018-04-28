@@ -39,11 +39,11 @@ int main(int argc, char **argv)
     struct AES_ctx ctx;
     long long int num_blocks, local_num_blocks;
     uint8_t* local_in;
-    uint8_t* buf;
     uint8_t * in;
 
     int i, j;
     if(my_rank == 0){
+        FILE *fh;
         fh = fopen(argv[1], "a");
         fprintf(fh, "Processes: %d\n", comm_sz);
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
             #endif
             local_num_blocks = num_blocks / comm_sz;
 
-            in = malloc(arrSizes[i]*sizeof(uint8_t))
+            in = malloc(arrSizes[i]*sizeof(uint8_t));
             // Fill all elemnts with hex value of the ASCII 'A'
             for(j = 0 ; j < arrSizes[i] ; j++){
                 in[j] = 0x41;
@@ -68,12 +68,11 @@ int main(int argc, char **argv)
         
         MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
         printf("[%d/%d] received: %llu\n", my_rank, comm_sz, local_num_blocks);
-        local_buf = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(uint8_t))
+        local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(uint8_t));
         MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT,
-                      local_buf, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
-        buf = malloc(16*sizeof(uint8_t));
+                      local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
         AES_init_ctx_iv(&ctx, key, iv);
-        AES_CTR_xcrypt_buffer(&ctx, in, local_num_blocks*AES_BLOCKLEN);
+        AES_CTR_xcrypt_buffer(&ctx, local_in, local_num_blocks*AES_BLOCKLEN);
         if(my_rank == 0){
             end = MPI_Wtime();
             elapsed = end-start;
