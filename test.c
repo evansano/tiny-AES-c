@@ -58,20 +58,37 @@ int main(void)
                         0x30, 0xc8, 0x1c, 0x46, 0xa3, 0x5c, 0xe4, 0x11, 0xe5, 0xfb, 0xc1, 0x19, 0x1a, 0x0a, 0x52, 0xef,
                         0xf6, 0x9f, 0x24, 0x45, 0xdf, 0x4f, 0x9b, 0x17, 0xad, 0x2b, 0x41, 0x7b, 0xe6, 0x6c, 0x37, 0x10 };
     struct AES_ctx ctx;
-    
+    long long int num_blocks, local_num_blocks;
+    uint8_t* local_buf;
+
+    if(my_rank == 0){
+        #if defined AES_BLOCKLEN
+          num_blocks = length / AES_BLOCKLEN;
+        #else
+          num_blocks = length / 16;
+        #endif
+    local_num_blocks = num_blocks / comm_sz;
+    }
+    MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
+    printf("[%d/%d] received: %llu\n", my_rank, comm_sz, local_num_blocks);
+    local_buf = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(uint8_t))
+    MPI_Scatter(buf, AES_BLOCKLEN*local_num_blocks, MPI_INT,
+                  local_buf, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
+    return;
+
     AES_init_ctx_iv(&ctx, key, iv);
     AES_CTR_xcrypt_buffer(&ctx, in, 64, my_rank, comm_sz, comm);
   
-    if(my_rank == 0){
-        if (0 == memcmp((char *) out, (char *) in, 64))
-        {
-            printf("SUCCESS!\n");
-        }
-        else
-        {
-            printf("FAILURE!\n");
-        }
-    }
+    // if(my_rank == 0){
+    //     if (0 == memcmp((char *) out, (char *) in, 64))
+    //     {
+    //         printf("SUCCESS!\n");
+    //     }
+    //     else
+    //     {
+    //         printf("FAILURE!\n");
+    //     }
+    // }
     MPI_Finalize();
     return 0;
 }
