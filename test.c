@@ -13,7 +13,6 @@ int arrSizes[7] = {      1024,    8192,   65536,  1048576, 8388608, 67108864, 10
 char* arrSizeHuman[7] = {"1 kB", "8 kB", "64 kB", "1 MB",  "8 MB",  "64 MB",  "1 GB"};
 // int arrSizes[3] = {1024, 8192, 65536};
 // char* arrSizeHuman[3] = {"1 kB", "8 kB", "64 kB"};
-static void phex(uint8_t* str);
 
 
 int comm_sz, my_rank;
@@ -103,24 +102,6 @@ int main(int argc, char **argv)
     return 0;
 }
 
-
-// prints string as hex
-static void phex(uint8_t* str)
-{
-
-#ifdef AES128
-    uint8_t len = 16;
-#elif defined(AES192)
-    uint8_t len = 24;
-#elif defined(AES256)
-    uint8_t len = 32;
-#endif
-
-    unsigned char i;
-    for (i = 0; i < len; ++i)
-        printf("%.2x", str[i]);
-    printf("\n");
-}
 
 
 
