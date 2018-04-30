@@ -85,6 +85,9 @@ int main(int argc, char **argv)
                 printf("[%s] post-scatter\n", arrSizeHuman[i]);
             }
             AES_init_ctx_iv(&ctx, key, iv);
+            if(my_rank == 0){
+                printf("[%s] post-init\n", arrSizeHuman[i]);
+            }
             AES_CTR_xcrypt_buffer(&ctx, local_in, arrSizes[i]/comm_sz);
             if(my_rank == 0){
                 printf("[%s] post-encrypt\n", arrSizeHuman[i]);
