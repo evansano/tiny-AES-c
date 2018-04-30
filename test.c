@@ -6,7 +6,7 @@
 // Enable ECB, CTR and CBC mode. Note this can be done before including aes.h or at compile-time.
 // E.g. with GCC by using the -D flag: gcc -c aes.c -DCBC=0 -DCTR=1 -DECB=1
 #define CTR 1
-#define LOOPS 50
+#define LOOPS 1
 #include "aes.h"
 
 int arrSizes[7] = {      1024,    8192,   65536,  1048576, 8388608, 67108864, 1073741824};
@@ -74,9 +74,13 @@ int main(int argc, char **argv)
             
             MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
             local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(uint8_t));
-
+            if(my_rank == 0){
+                printf("pre-scatter");
+            }
             MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT, local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
-
+            if(my_rank == 0){
+                printf("post-scatter");
+            }
             AES_init_ctx_iv(&ctx, key, iv);
             AES_CTR_xcrypt_buffer(&ctx, local_in, local_num_blocks*AES_BLOCKLEN);
 
@@ -94,7 +98,7 @@ int main(int argc, char **argv)
             elapsed /= LOOPS;
             fprintf(fh, "Runs: %d\nFile size: %s\nAverage Elapsed time: %f seconds\n\n", LOOPS, arrSizeHuman[i], elapsed);
         }
-        
+
     } // End of one filesize
     if(my_rank == 0){
         fclose(fh);
