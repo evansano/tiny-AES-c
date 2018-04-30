@@ -5,7 +5,7 @@
 // Enable ECB, CTR and CBC mode. Note this can be done before including aes.h or at compile-time.
 // E.g. with GCC by using the -D flag: gcc -c aes.c -DCBC=0 -DCTR=1 -DECB=1
 #define CTR 1
-
+#define LOOPS 50
 #include "aes.h"
 
 // int arrSizes[6] = {1024, 8192, 65536, 1048576, 5242880, 10485760};
@@ -41,48 +41,53 @@ int main(int argc, char **argv)
     uint8_t* local_in;
     uint8_t * in;
     FILE *fh;
-    int i, j;
+    int i, j, k;
     if(my_rank == 0){
         
-        fh = fopen(argv[1], "a");
+        fh = fopen(argv[1], "w+");
         fprintf(fh, "Processes: %d\n", comm_sz);
 
     }
     for(i = 0; i < 6 ; i++){
+        elapsed = 0.0;
+        for(k = 0 ; k < LOOPS ; k++){
+            if(my_rank == 0){
+                #if defined AES_BLOCKLEN
+                  num_blocks = arrSizes[i] / AES_BLOCKLEN;
+                #else
+                  num_blocks = arrSizes[i] / 16;
+                #endif
+                local_num_blocks = num_blocks / comm_sz;
 
-        if(my_rank == 0){
-            #if defined AES_BLOCKLEN
-              num_blocks = arrSizes[i] / AES_BLOCKLEN;
-            #else
-              num_blocks = arrSizes[i] / 16;
-            #endif
-            local_num_blocks = num_blocks / comm_sz;
-
-            in = malloc(arrSizes[i]*sizeof(int));
-            // Fill all elemnts with hex value of the ASCII 'A'
-            for(j = 0 ; j < arrSizes[i] ; j++){
-                in[j] = 0x41;
+                in = malloc(arrSizes[i]*sizeof(int));
+                // Fill all elemnts with hex value of the ASCII 'A'
+                for(j = 0 ; j < arrSizes[i] ; j++){
+                    in[j] = 0x41;
+                }
+                start = MPI_Wtime();
             }
-            start = MPI_Wtime();
-        }
-        
-        MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
-        printf("[%d/%d] received: %llu\n", my_rank, comm_sz, local_num_blocks);
-        local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(int));
-        MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT,
-                      local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
-        AES_init_ctx_iv(&ctx, key, iv);
-        AES_CTR_xcrypt_buffer(&ctx, local_in, local_num_blocks*AES_BLOCKLEN);
-        if(my_rank == 0){
-            end = MPI_Wtime();
-            elapsed = end-start;
-            fprintf(fh, "File size: %s\nElapsed time: %f seconds\n\n", arrSizeHuman[i], elapsed);
-            free(in);
-        }
-        MPI_Barrier(comm);
+            
+            MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
+            printf("[%d/%d] received: %llu\n", my_rank, comm_sz, local_num_blocks);
+            local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(int));
+            MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT,
+                          local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
+            AES_init_ctx_iv(&ctx, key, iv);
+            AES_CTR_xcrypt_buffer(&ctx, local_in, local_num_blocks*AES_BLOCKLEN);
+            if(my_rank == 0){
+                end = MPI_Wtime();
+                elapsed += end-start;
+                free(in);
+            }
+            MPI_Barrier(comm);
 
-        
-        free(local_in);
+            
+            free(local_in);
+        }
+        if(my_rank == 0){
+            elapsed /= LOOPS;
+            fprintf(fh, "Runs: %d\nFile size: %s\nAverage Elapsed time: %f seconds\n\n", LOOPS, arrSizeHuman[i], elapsed);
+        }
     }
     if(my_rank == 0){
         fclose(fh);
