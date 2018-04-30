@@ -86,15 +86,22 @@ int main(int argc, char **argv)
             }
             AES_init_ctx_iv(&ctx, key, iv);
             AES_CTR_xcrypt_buffer(&ctx, local_in, arrSizes[i]/comm_sz);
-
+            if(my_rank == 0){
+                printf("[%s] post-encrypt\n", arrSizeHuman[i]);
+            }
             if(my_rank == 0){
                 end = MPI_Wtime();
                 elapsed += end-start;
                 free(in);
             }
-
+            if(my_rank == 0){
+                printf("[%s] after free(in)\n", arrSizeHuman[i]);
+            }
             MPI_Barrier(comm);
             free(local_in);
+            if(my_rank == 0){
+                printf("[%s] after free(local)\n", arrSizeHuman[i]);
+            }
         } // End one loop
         
         if(my_rank == 0){
