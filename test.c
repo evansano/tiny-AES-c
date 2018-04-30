@@ -8,8 +8,8 @@
 #define LOOPS 50
 #include "aes.h"
 
-// int arrSizes[6] = {1024, 8192, 65536, 1048576, 5242880, 10485760};
-// char* arrSizeHuman[6] = {"1 kB", "8 kB", "64 kB", "1 MB" "5 MB", "10 MB"}
+// int arrSizes[8] = {1024, 8192, 65536, 1048576, 5242880, 10485760, 104857600, 1073741824};
+// char* arrSizeHuman[8] = {"1 kB", "8 kB", "64 kB", "1 MB" "5 MB", "10 MB", "100 MB", "1 GB"};
 int arrSizes[3] = {1024, 8192, 65536};
 char* arrSizeHuman[3] = {"1 kB", "8 kB", "64 kB"};
 static void phex(uint8_t* str);
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
         fprintf(fh, "Processes: %d\n", comm_sz);
 
     }
-    for(i = 0; i < 6 ; i++){
+    for(i = 0; i < 8 ; i++){
         elapsed = 0.0;
         for(k = 0 ; k < LOOPS ; k++){
             if(my_rank == 0){
