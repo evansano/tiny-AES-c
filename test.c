@@ -34,12 +34,12 @@ int main(int argc, char **argv)
     MPI_Comm comm = MPI_COMM_WORLD;
     MPI_Comm_rank(comm, &my_rank);
     MPI_Comm_size(comm, &comm_sz);
-    uint8_t key[16] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
-    uint8_t iv[16]  = { 0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff };
+    int key[16] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
+    int iv[16]  = { 0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff };
     struct AES_ctx ctx;
     long long int num_blocks, local_num_blocks;
-    uint8_t* local_in;
-    uint8_t * in;
+    int* local_in;
+    int * in;
     FILE *fh;
     int i, j, k;
     if(my_rank == 0){
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
                 #endif
                 local_num_blocks = num_blocks / comm_sz;
 
-                in = malloc(arrSizes[i]*sizeof(uint8_t));
+                in = malloc(arrSizes[i]*sizeof(int));
                 // Fill all elemnts with hex value of the ASCII 'A'
                 for(j = 0 ; j < arrSizes[i] ; j++){
                     in[j] = 0x41;
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
             }
             
             MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
-            local_in = malloc(arrSizes[i]/comm_sz*sizeof(uint8_t));
+            local_in = malloc(arrSizes[i]/comm_sz*sizeof(int));
             if(my_rank == 0){
                 printf("[%s] pre-scatter\n", arrSizeHuman[i]);
             }
