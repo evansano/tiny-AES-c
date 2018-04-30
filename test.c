@@ -76,16 +76,16 @@ int main(int argc, char **argv)
             }
             
             MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
-            local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(uint8_t));
+            local_in = malloc(arrSizes[i]/comm_sz*sizeof(uint8_t));
             if(my_rank == 0){
                 printf("[%s] pre-scatter\n", arrSizeHuman[i]);
             }
-            MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT, local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
+            MPI_Scatter(in, arrSizes[i]/comm_sz, MPI_INT, local_in, arrSizes[i]/comm_sz, MPI_INT, 0, comm);
             if(my_rank == 0){
                 printf("[%s] post-scatter\n", arrSizeHuman[i]);
             }
             AES_init_ctx_iv(&ctx, key, iv);
-            AES_CTR_xcrypt_buffer(&ctx, local_in, local_num_blocks*AES_BLOCKLEN);
+            AES_CTR_xcrypt_buffer(&ctx, local_in, arrSizes[i]/comm_sz);
 
             if(my_rank == 0){
                 end = MPI_Wtime();
