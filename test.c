@@ -89,11 +89,13 @@ int main(int argc, char **argv)
             MPI_Barrier(comm);
             free(local_in);
         } // End one loop
+        
         if(my_rank == 0){
             elapsed /= LOOPS;
             fprintf(fh, "Runs: %d\nFile size: %s\nAverage Elapsed time: %f seconds\n\n", LOOPS, arrSizeHuman[i], elapsed);
         }
-    }
+        
+    } // End of one filesize
     if(my_rank == 0){
         fclose(fh);
     }
