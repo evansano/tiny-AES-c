@@ -473,7 +473,7 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, int* buf,int length)
       
       memcpy(buffer, ctx->Iv, AES_BLOCKLEN);
       Cipher((state_t*)buffer,ctx->RoundKey);
-
+      printf("post-cipher\n");
       /* Increment Iv and handle overflow */
       for (bi = (AES_BLOCKLEN - 1); bi >= 0; --bi)
       {
