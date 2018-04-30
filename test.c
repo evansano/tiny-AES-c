@@ -9,8 +9,8 @@
 #define LOOPS 1
 #include "aes.h"
 
-int arrSizes[7] = {      1024,    8192,   65536,  1048576, 8388608, 67108864, 1073741824};
-char* arrSizeHuman[7] = {"1 kB", "8 kB", "64 kB", "1 MB",  "8 MB",  "64 MB",  "1 GB"};
+int arrSizes[6] = {      1024,    8192,   65536,  1048576, 8388608, 67108864};//, 1073741824};
+char* arrSizeHuman[6] = {"1 kB", "8 kB", "64 kB", "1 MB",  "8 MB",  "64 MB"};//,  "1 GB"};
 // int arrSizes[3] = {1024, 8192, 65536};
 // char* arrSizeHuman[3] = {"1 kB", "8 kB", "64 kB"};
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
         fprintf(fh, "Processes: %d\n", comm_sz);
 
     }
-    for(i = 0; i < 7 ; i++){
+    for(i = 0; i < 6 ; i++){
         if(my_rank == 0){
             elapsed = 0.0;
         }
