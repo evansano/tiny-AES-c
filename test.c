@@ -8,8 +8,8 @@
 #define LOOPS 50
 #include "aes.h"
 
-int arrSizes[8] = {1024, 8192, 65536, 1048576, 5242880, 10485760, 104857600, 1073741824};
-char* arrSizeHuman[8] = {"1 kB", "8 kB", "64 kB", "1 MB" "5 MB", "10 MB", "100 MB", "1 GB"};
+int arrSizes[8] = {      1024,    8192,   65536,  1048576, 8388608, 67108864, 1073741824};
+char* arrSizeHuman[8] = {"1 kB", "8 kB", "64 kB", "1 MB",  "8 MB",  "64 MB",  "1 GB"};
 // int arrSizes[3] = {1024, 8192, 65536};
 // char* arrSizeHuman[3] = {"1 kB", "8 kB", "64 kB"};
 static void phex(uint8_t* str);
@@ -49,7 +49,9 @@ int main(int argc, char **argv)
 
     }
     for(i = 0; i < 8 ; i++){
-        elapsed = 0.0;
+        if(my_rank == 0){
+            elapsed = 0.0;
+        }
         for(k = 0 ; k < LOOPS ; k++){
             if(my_rank == 0){
                 #if defined AES_BLOCKLEN
@@ -59,30 +61,34 @@ int main(int argc, char **argv)
                 #endif
                 local_num_blocks = num_blocks / comm_sz;
 
-                in = malloc(arrSizes[i]*sizeof(int));
+                in = malloc(arrSizes[i]*sizeof(uint8_t));
                 // Fill all elemnts with hex value of the ASCII 'A'
                 for(j = 0 ; j < arrSizes[i] ; j++){
                     in[j] = 0x41;
                 }
+            }
+            MPI_Barrier(comm);
+            if(my_rank == 0){
                 start = MPI_Wtime();
             }
             
             MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
-            local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(int));
-            MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT,
-                          local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
+            local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(uint8_t));
+
+            MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT, local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
+
             AES_init_ctx_iv(&ctx, key, iv);
             AES_CTR_xcrypt_buffer(&ctx, local_in, local_num_blocks*AES_BLOCKLEN);
+
             if(my_rank == 0){
                 end = MPI_Wtime();
                 elapsed += end-start;
                 free(in);
             }
-            MPI_Barrier(comm);
 
-            
+            MPI_Barrier(comm);
             free(local_in);
-        }
+        } // End one loop
         if(my_rank == 0){
             elapsed /= LOOPS;
             fprintf(fh, "Runs: %d\nFile size: %s\nAverage Elapsed time: %f seconds\n\n", LOOPS, arrSizeHuman[i], elapsed);
