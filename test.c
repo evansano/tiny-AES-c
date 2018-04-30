@@ -55,7 +55,7 @@ int main(int argc, char **argv)
         for(k = 0 ; k < LOOPS ; k++){
 
             if(my_rank == 0){
-                printf("pre-setup\n");
+                printf("[%s] pre-setup\n", arrSizeHuman[i]);
                 #if defined AES_BLOCKLEN
                   num_blocks = arrSizes[i] / AES_BLOCKLEN;
                 #else
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
                 for(j = 0 ; j < arrSizes[i] ; j++){
                     in[j] = 0x41;
                 }
-                printf("post-setup\n");
+                printf("[%s] post-setup\n", arrSizeHuman[i]);
             }
             MPI_Barrier(comm);
             if(my_rank == 0){
@@ -78,11 +78,11 @@ int main(int argc, char **argv)
             MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
             local_in = malloc(AES_BLOCKLEN*local_num_blocks*sizeof(uint8_t));
             if(my_rank == 0){
-                printf("pre-scatter\n");
+                printf("[%s] pre-scatter\n", arrSizeHuman[i]);
             }
             MPI_Scatter(in, AES_BLOCKLEN*local_num_blocks, MPI_INT, local_in, AES_BLOCKLEN*local_num_blocks, MPI_INT, 0, comm);
             if(my_rank == 0){
-                printf("post-scatter\n");
+                printf("[%s] post-scatter\n", arrSizeHuman[i]);
             }
             AES_init_ctx_iv(&ctx, key, iv);
             AES_CTR_xcrypt_buffer(&ctx, local_in, local_num_blocks*AES_BLOCKLEN);
