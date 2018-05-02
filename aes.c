@@ -461,7 +461,7 @@ static void InvCipher(state_t* state,uint8_t* RoundKey)
 #if defined(CTR) && (CTR == 1)
 
 /* Symmetrical operation: same function for encrypting as for decrypting. Note any IV/nonce should never be reused with the same key */
-void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, int* buf,int length)
+void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, char* buf,int length)
 {  
   int buffer[AES_BLOCKLEN];
   int i;

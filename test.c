@@ -6,7 +6,7 @@
 // Enable ECB, CTR and CBC mode. Note this can be done before including aes.h or at compile-time.
 // E.g. with GCC by using the -D flag: gcc -c aes.c -DCBC=0 -DCTR=1 -DECB=1
 #define CTR 1
-#define LOOPS 100
+#define LOOPS 10
 #include "aes.h"
 
 int arrSizes[6] = {      1024,    8192,   65536,  1048576, 8388608, 67108864};//, 1073741824};
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
                 #endif
                 local_num_blocks = num_blocks / comm_sz;
 
-                in = malloc(arrSizes[i]*sizeof(int));
+                in = malloc(arrSizes[i]*sizeof(char));
                 // Fill all elemnts with hex value of the ASCII 'A'
                 for(j = 0 ; j < arrSizes[i] ; j++){
                     in[j] = 0x41;
@@ -76,17 +76,18 @@ int main(int argc, char **argv)
             }
             
             MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
-            local_in = malloc(arrSizes[i]/comm_sz*sizeof(int));
+            local_in = malloc(arrSizes[i]/comm_sz*sizeof(char));
             // if(my_rank == 0){
             //     printf("[%s] pre-scatter\n", arrSizeHuman[i]);
             // }
-            MPI_Scatter(in, arrSizes[i]/comm_sz, MPI_INT, local_in, arrSizes[i]/comm_sz, MPI_INT, 0, comm);
+            MPI_Scatter(in, arrSizes[i]/comm_sz, MPI_CHAR, local_in, arrSizes[i]/comm_sz, MPI_CHAR, 0, comm);
             // if(my_rank == 0){
             //     printf("[%s] post-scatter\n", arrSizeHuman[i]);
             // }
             AES_init_ctx_iv(&ctx, key, iv);
             AES_CTR_xcrypt_buffer(&ctx, local_in, arrSizes[i]/comm_sz);
-
+            MPI_Gather(local_in, arrSizes[i]/comm_sz, MPI_CHAR, in, arrSizes[i]/comm_sz, MPI_CHAR, 0, comm);
+            
             if(my_rank == 0){
                 end = MPI_Wtime();
                 elapsed += end-start;
