@@ -38,8 +38,8 @@ int main(int argc, char **argv)
     int iv[16]  = { 0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff };
     struct AES_ctx ctx;
     long long int num_blocks, local_num_blocks;
-    int* local_in;
-    int * in;
+    char* local_in;
+    char * in;
     FILE *fh;
     int i, j, k;
     if(my_rank == 0){
