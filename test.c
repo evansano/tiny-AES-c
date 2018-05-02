@@ -6,7 +6,7 @@
 // Enable ECB, CTR and CBC mode. Note this can be done before including aes.h or at compile-time.
 // E.g. with GCC by using the -D flag: gcc -c aes.c -DCBC=0 -DCTR=1 -DECB=1
 #define CTR 1
-#define LOOPS 10
+#define LOOPS 100
 #include "aes.h"
 
 int arrSizes[6] = {      1024,    8192,   65536,  1048576, 8388608, 67108864};//, 1073741824};
