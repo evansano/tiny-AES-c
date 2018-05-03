@@ -1,7 +1,8 @@
 #include <stdint.h>
 #include <string.h>
 #include "aes.h"
-
+// Alex Hall and Evan Sano both worked together to strip out code from skeleton code
+// we didn't track who got rid of what but it was about even on this file. Evan switched all uint8_t inputs into chars
 /*****************************************************************************/
 /* Defines:                                                                  */
 /*****************************************************************************/

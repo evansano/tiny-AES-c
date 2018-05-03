@@ -1,3 +1,4 @@
+
 #CC           = avr-gcc
 #CFLAGS       = -Wall -mmcu=atmega16 -Os -Wl,-Map,test.map
 #OBJCOPY      = avr-objcopy

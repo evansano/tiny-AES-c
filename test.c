@@ -20,18 +20,16 @@ int main(int argc, char **argv)
     double start, end, elapsed;
     #ifdef AES128
         printf("\nTesting AES128\n\n");
-    #elif defined(AES192)
-        printf("\nTesting AES192\n\n");
-    #elif defined(AES256)
-        printf("\nTesting AES256\n\n");
     #else
         printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
         return 0;
     #endif
+    // Alex Hall
     MPI_Init(NULL, NULL);
     MPI_Comm comm = MPI_COMM_WORLD;
     MPI_Comm_rank(comm, &my_rank);
     MPI_Comm_size(comm, &comm_sz);
+    // Evan Sano
     int key[16] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
     int iv[16]  = { 0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff };
     struct AES_ctx ctx;
@@ -47,13 +45,13 @@ int main(int argc, char **argv)
 
     }
     for(i = 0; i < 6 ; i++){
+        // Evan added timing
         if(my_rank == 0){
             elapsed = 0.0;
         }
         for(k = 0 ; k < LOOPS ; k++){
-
+            // Alex Hall took care of initialization
             if(my_rank == 0){
-                //printf("[%s] pre-setup\n", arrSizeHuman[i]);
                 #if defined AES_BLOCKLEN
                   num_blocks = arrSizes[i] / AES_BLOCKLEN;
                 #else
@@ -66,13 +64,12 @@ int main(int argc, char **argv)
                 for(j = 0 ; j < arrSizes[i] ; j++){
                     in[j] = 0x41;
                 }
-                //printf("[%s] post-setup\n", arrSizeHuman[i]);
             }
             MPI_Barrier(comm);
             if(my_rank == 0){
                 start = MPI_Wtime();
             }
-            
+            // Evan Sano        
             MPI_Bcast(&local_num_blocks, 1, MPI_LONG_LONG, 0, comm);
             local_in = malloc(arrSizes[i]/comm_sz*sizeof(char));
             // if(my_rank == 0){
@@ -85,7 +82,8 @@ int main(int argc, char **argv)
             AES_init_ctx_iv(&ctx, key, iv);
             AES_CTR_xcrypt_buffer(&ctx, local_in, arrSizes[i]/comm_sz);
             MPI_Gather(local_in, arrSizes[i]/comm_sz, MPI_CHAR, in, arrSizes[i]/comm_sz, MPI_CHAR, 0, comm);
-            
+            // End Evan Sano
+            // Alex Hall
             if(my_rank == 0){
                 end = MPI_Wtime();
                 elapsed += end-start;
@@ -94,6 +92,7 @@ int main(int argc, char **argv)
 
             MPI_Barrier(comm);
             free(local_in);
+            // End Alex Hall
         } // End one loop
         
         if(my_rank == 0){
