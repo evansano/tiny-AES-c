@@ -37,7 +37,7 @@ test.elf : aes.o test.o
 
 
 clean:
-	rm -f *.OBJ *.LST *.o *.gch *.out *.hex *.map
+	rm -f *.OBJ *.LST *.o *.gch *.out *.hex *.map *.elf
 
 lint:
 	$(call SPLINT)
